@@ -3,22 +3,28 @@ using System.Collections;
 
 public class JudgeState : MonoBehaviour {
 	public static int[,] table = new int[,]{ { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 } };
-	private string name = "cube";
-	public int score = 0;
-	public bool State = true;
-	private SpriteRenderer img;
+	public static int score = 0;
+	public static bool State = true;
+	public static SpriteRenderer img;
+	public static JudgeState instance;
 	// Use this for initialization
-	void Start () {
+	public void Start () {
+		instance = this;
 		img = this.GetComponent<SpriteRenderer> ();
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++) {
 				table [i, j] = 0;
 			}
 		}
-		int x = Random.Range(0,4);
-		int y = Random.Range(0,4);
-		int ti = Random.Range(1,3);
-		table [x, y] = ti * 2 + 2;
+		while (true) {
+			int x = Random.Range (0, 4);
+			int y = Random.Range (0, 4);
+			int ti = Random.Range (1, 3);
+			if (table [x, y] == 0) {
+				table [x, y] = ti * 2 ;
+				break;
+			}
+		}
 	}
 	int w(int[,]table){
 		int flagw = 0;
@@ -86,11 +92,12 @@ public class JudgeState : MonoBehaviour {
 					State = false;
 					img = this.GetComponent<SpriteRenderer> ();
 					img.sprite = Resources.Load ("success", typeof(Sprite))as Sprite;
+					this.transform.GetComponent<SpriteRenderer> ().sortingLayerName = "Mtop";
 					break;
 				}
 			}
 		}
-		if (State == true) {
+		if (State) {
 			int flaga = a (table);
 			int flagd = d (table);
 			int flags = s (table);
@@ -103,143 +110,168 @@ public class JudgeState : MonoBehaviour {
 			}
 			if (State) {
 				if (Input.GetKeyDown (KeyCode.W)) {
-					for (int i = 0; i < 4; i++) {
-						for (int j = 0; j < 3; j++) {
-							if (table [j, i] != 0) {
-								for (int k = j + 1; k < 4; k++) {
-									if (table [k, i] == table [j, i]) {
-										table [j, i] += table [k, i];
-										table [k, i] = 0;
-										score += table [j, i];
-										break;
-									} else if (table [k, i] != 0) {
-										break;
+					if (flagw != 0) {
+						for (int i = 0; i < 4; i++) {
+							for (int j = 0; j < 3; j++) {
+								if (table [j, i] != 0) {
+									for (int k = j + 1; k < 4; k++) {
+										if (table [k, i] == table [j, i]) {
+											table [j, i] += table [k, i];
+											table [k, i] = 0;
+											score += 2*table [j, i];
+											break;
+										} else if (table [k, i] != 0) {
+											break;
+										}
+									}
+								}
+							}
+							for (int p = 0; p < 3; p++) {
+								if (table [p, i] == 0) {
+									for (int l = p + 1; l < 4; l++) {
+										if (table [l, i] != 0) {
+											table [p, i] = table [l, i];
+											table [l, i] = 0;
+											break;
+										}
 									}
 								}
 							}
 						}
-						for (int p = 0; p < 3; p++) {
-							if (table [p, i] == 0) {
-								for (int l = p + 1; l < 4; l++) {
-									if (table [l, i] != 0) {
-										table [p, i] = table [l, i];
-										table [l, i] = 0;
-										break;
-									}
-								}
+						while (true) {
+							int x = Random.Range (0, 4);
+							int y = Random.Range (0, 4);
+							int ti = Random.Range (1, 3);
+							if (table [x, y] == 0) {
+								table [x, y] = ti * 2;
+								break;
 							}
 						}
-					}
-					int x = Random.Range(0,4);
-					int y = Random.Range(0,4);
-					int ti = Random.Range(1,3);
-					if (table [x, y] == 0) {
-						table [x, y] = ti * 2 + 2;
 					}
 				}
-				if (Input.GetKeyDown (KeyCode.S)) {
-					for (int i = 0; i < 4; i++) {
-						for (int j = 3; j > 0; j--) {
-							if (table [j, i] != 0) {
-								for (int k = j - 1; k >= 0; k--) {
-									if (table [k, i] == table [j, i]) {
-										table [j, i] += table [k, i];
-										table [k, i] = 0;
-										score += table [j, i];
-										break;
-									} else if (table [k, i] != 0) {
-										break;
+				else if (Input.GetKeyDown (KeyCode.S)) {
+					if (flags != 0) {
+						for (int i = 0; i < 4; i++) {
+							for (int j = 3; j > 0; j--) {
+								if (table [j, i] != 0) {
+									for (int k = j - 1; k >= 0; k--) {
+										if (table [k, i] == table [j, i]) {
+											table [j, i] += table [k, i];
+											table [k, i] = 0;
+											score += 2*table [j, i];
+											break;
+										} else if (table [k, i] != 0) {
+											break;
+										}
+									}
+								}
+							}
+							for (int p = 3; p > 0; p--) {
+								if (table [p, i] == 0) {
+									for (int l = p - 1; l >= 0; l--) {
+										if (table [l, i] != 0) {
+											table [p, i] = table [l, i];
+											table [l, i] = 0;
+											break;
+										}
 									}
 								}
 							}
 						}
-						for (int p = 3; p > 0; p--) {
-							if (table [p, i] == 0) {
-								for (int l = p - 1; l >= 0; l--) {
-									if (table [l, i] != 0) {
-										table [p, i] = table [l, i];
-										table [l, i] = 0;
-										break;
-									}
-								}
+						while (true) {
+							int x = Random.Range (0, 4);
+							int y = Random.Range (0, 4);
+							int ti = Random.Range (1, 3);
+							if (table [x, y] == 0) {
+								table [x, y] = ti * 2;
+								break;
 							}
 						}
-					}
-					int x = Random.Range(0,4);
-					int y = Random.Range(0,4);
-					int ti = Random.Range(1,3);
-					if (table [x, y] == 0) {
-						table [x, y] = ti * 2 + 2;
 					}
 				}
-				if (Input.GetKeyDown (KeyCode.A)) {
-					for (int i = 0; i < 4; i++) {
-						for (int j = 0; j < 3; j++) {
-							if (table [i, j] != 0) {
-								for (int k = i + 1; k < 4; k++) {
-									if (table [i, k] == table [i, j]) {
-										table [i, j] += table [i, k];
-										table [i, k] = 0;
-										score += table [i, j];
-										break;
+				else if (Input.GetKeyDown (KeyCode.A)) {
+					if (flaga != 0) {
+						for (int i = 0; i < 4; i++) {
+							for (int j = 0; j < 3; j++) {
+								if (table [i, j] != 0) {
+									for (int k = j + 1; k < 4; k++) {
+										if (table [i, k] == table [i, j]) {
+											table [i, j] += table [i, k];
+											table [i, k] = 0;
+											score += 2*table [i, j];
+											break;
+										} else if (table [i, k] != 0) {
+											break;
+										}
+									}
+								}
+							}
+							for (int p = 0; p < 3; p++) {
+								if (table [i, p] == 0) {
+									for (int l = p + 1; l < 4; l++) {
+										if (table [i, l] != 0) {
+											table [i, p] = table [i, l];
+											table [i, l] = 0;
+											break;
+										}
 									}
 								}
 							}
 						}
-						for (int p = 0; p < 3; p++) {
-							if (table [i, p] == 0) {
-								for (int l = p + 1; l < 4; l++) {
-									if (table [i, l] != 0) {
-										table [i, p] = table [i, l];
-										table [i, l] = 0;
-										break;
-									}
-								}
+						while (true) {
+							int x = Random.Range (0, 4);
+							int y = Random.Range (0, 4);
+							int ti = Random.Range (1, 3);
+							if (table [x, y] == 0) {
+								table [x, y] = ti * 2;
+								break;
 							}
 						}
-					}
-					int x = Random.Range(0,4);
-					int y = Random.Range(0,4);
-					int ti = Random.Range(1,3);
-					if (table [x, y] == 0) {
-						table [x, y] = ti * 2 + 2;
 					}
 				}
-				if (Input.GetKeyDown (KeyCode.D)) {
-					for (int i = 0; i < 4; i++) {
-						for (int j = 3; j > 0; j--) {
-							if (table [i, j] != 0) {
-								for (int k = i - 1; k >= 0; k--) {
-									if (table [i, k] == table [i, j]) {
-										table [i, j] += table [i, k];
-										table [i, k] = 0;
-										score += table [i, j];
-										break;
+				else if (Input.GetKeyDown (KeyCode.D)) {
+					if (flagd != 0) {
+						for (int i = 0; i < 4; i++) {
+							for (int j = 3; j > 0; j--) {
+								if (table [i, j] != 0) {
+									for (int k = j - 1; k >= 0; k--) {
+										if (table [i, k] == table [i, j]) {
+											table [i, j] += table [i, k];
+											table [i, k] = 0;
+											score += 2*table [i, j];
+											break;
+										} else if (table [i, k] != 0) {
+											break;
+										}
+									}
+								}
+							}
+							for (int p = 3; p > 0; p--) {
+								if (table [i, p] == 0) {
+									for (int l = p - 1; l >= 0; l--) {
+										if (table [i, l] != 0) {
+											table [i, p] = table [i, l];
+											table [i, l] = 0;
+											break;
+										}
 									}
 								}
 							}
 						}
-						for (int p = 3; p > 0; p--) {
-							if (table [i, p] == 0) {
-								for (int l = p - 1; l >= 0; l--) {
-									if (table [i, l] != 0) {
-										table [i, p] = table [i, l];
-										table [i, l] = 0;
-										break;
-									}
-								}
+						while (true) {
+							int x = Random.Range (0, 4);
+							int y = Random.Range (0, 4);
+							int ti = Random.Range (1, 3);
+							if (table [x, y] == 0) {
+								table [x, y] = ti * 2;
+								break;
 							}
 						}
-					}
-					int x = Random.Range(0,4);
-					int y = Random.Range(0,4);
-					int ti = Random.Range(1,3);
-					if (table [x, y] == 0) {
-						table [x, y] = ti * 2 + 2;
 					}
 				}
 			} else {
 				img.sprite = Resources.Load ("end", typeof(Sprite))as Sprite;
+				this.transform.GetComponent<SpriteRenderer> ().sortingLayerName = "Mtop";
 			}
 		}
 	}
